@@ -5,13 +5,8 @@ from PIL import Image
 from typing import Any, Literal, Optional, Union, cast, List
 import numpy.typing as npt
 from gui.utils import apply_hsv_filter
-import os
 import json
-
-
-def load_images_from_directory(directory: str) -> List[str]:
-    image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
-    return [f for f in os.listdir(directory) if os.path.splitext(f)[1].lower() in image_extensions]
+import io
 
 
 def main() -> None:
@@ -21,9 +16,9 @@ def main() -> None:
     # Sidebar for input options and sliders
     with st.sidebar:
         st.header("Controls")
-        source: Optional[Literal['Upload Image', 'Select Directory', 'Camera Feed']] = st.radio(
+        source: Optional[Literal['Upload Images', 'Camera Feed']] = st.radio(
             "Select input source:",
-            ("Upload Image", "Select Directory", "Camera Feed"),
+            ("Upload Images", "Camera Feed")
         )
 
         st.subheader("HSV Color Filter")
@@ -36,37 +31,30 @@ def main() -> None:
 
     image: Optional[npt.NDArray[np.uint8]] = None
     cap: Union[cv2.VideoCapture, None] = None
-    images: List[str] = []
+    uploaded_files: Optional[List[Any]] = []
     current_image_index: int = 0
 
     # Main area for image display
     col1, col2 = st.columns(2)
 
-    if source == "Upload Image":
-        uploaded_file: Optional[Any] = st.file_uploader(
-            "Choose an image...", type=["jpg", "jpeg", "png"])
-        if uploaded_file is not None:
-            pil_image: Image.Image = Image.open(uploaded_file)
-            image = np.array(pil_image.convert('RGB'), dtype=np.uint8)
-            image = cast(npt.NDArray[np.uint8],
-                         cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
-        else:
-            st.warning("Please upload an image.")
+    if source == "Upload Images":
+        uploaded_files = st.file_uploader(
+            "Choose images...", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+
+        if not uploaded_files:
+            st.warning("Please upload one or more images.")
             return
-    elif source == "Select Directory":
-        directory: str = st.text_input("Enter directory path:")
-        if directory:
-            images = load_images_from_directory(directory)
-            if not images:
-                st.warning("No images found in the specified directory.")
-                return
-            st.success(f"Found {len(images)} images in the directory.")
-            current_image_index = int(st.number_input(
-                "Select image index", min_value=0, max_value=len(images)-1, value=0, step=1))
-            image_path = os.path.join(directory, images[current_image_index])
-            image = cast(npt.NDArray[np.uint8], cv2.imread(image_path))
-            image = cast(npt.NDArray[np.uint8],
-                         cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
+        st.success(f"Uploaded {len(uploaded_files)} images.")
+        current_image_index = int(st.number_input(
+            "Select image index", min_value=0, max_value=len(uploaded_files)-1, value=0, step=1))
+
+        file = uploaded_files[current_image_index]
+        pil_image = Image.open(io.BytesIO(file.read()))
+        image = np.array(pil_image.convert('RGB'), dtype=np.uint8)
+        image = cast(npt.NDArray[np.uint8],
+                     cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+
     else:  # source == "Camera Feed"
         cap = cv2.VideoCapture(0)
         if not cap.isOpened():
@@ -80,13 +68,9 @@ def main() -> None:
             return
         image = cast(npt.NDArray[np.uint8], frame)
 
-    if image is None:
-        st.error("Error: No image available.")
-        return
-
     with col1:
         st.subheader("Original Image")
-        st.image(image, use_column_width=True)
+        st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), use_column_width=True)
 
     with col2:
         st.subheader("Filtered Image")
@@ -96,7 +80,8 @@ def main() -> None:
             [h_max, s_max, v_max], dtype=np.uint8)
         filtered_image: npt.NDArray[np.uint8] = apply_hsv_filter(
             image, lower_hsv, upper_hsv)
-        st.image(filtered_image, use_column_width=True)
+        st.image(cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB),
+                 use_column_width=True)
 
     # JSON Export and Display
     hsv_values = {
@@ -119,9 +104,10 @@ def main() -> None:
             mime="application/json"
         )
 
-    if source == "Select Directory":
+    if source == "Upload Images" and len(uploaded_files) > 1:
         if st.button("Next Image"):
-            current_image_index = (current_image_index + 1) % len(images)
+            current_image_index = (
+                current_image_index + 1) % len(uploaded_files)
             st.experimental_rerun()
 
     if cap is not None:
