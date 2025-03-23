@@ -1,0 +1,22 @@
+{
+    "recommendations": [
+        "ms-python.vscode-pylance",
+        "mhutchie.git-graph",
+        "codezombiech.gitignore",
+        "GitHub.copilot-chat",
+        "GitHub.copilot",
+        "mhutchie.git-graph",
+        "donjayamanne.githistory",
+        "GitHub.copilot-chat",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "VisualStudioExptTeam.vscodeintellicode",
+        "ms-python.debugpy",
+        "ms-python.black-formatter",
+        "ms-python.flake8",
+        "IronGeek.vscode-env",
+        "donjayamanne.python-environment-manager",
+        "ms-python.isort",
+        "ms-azuretools.vscode-docker"
+    ]
+}

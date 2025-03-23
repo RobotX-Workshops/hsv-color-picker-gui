@@ -1,0 +1,20 @@
+{
+    "[markdown]": {
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true
+    },
+    "python.analysis.typeCheckingMode": "strict",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.markdownlint": "always",
+        "source.organizeImports": "explicit",
+        "source.fixAll": "explicit"
+    },
+    "editor.formatOnSave": true,
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportUnknownMemberType": "none",
+        "reportMissingTypeStubs": "none",
+    },
+    "flake8.args": [
+        "--max-line-length=120"
+    ],
+}
