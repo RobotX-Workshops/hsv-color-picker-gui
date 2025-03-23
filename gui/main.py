@@ -75,7 +75,7 @@ def main() -> None:
 
     with col1:
         st.subheader("Original Image")
-        st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), use_column_width=True)
+        st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), use_container_width=True)
 
     with col2:
         st.subheader("Filtered Image")
@@ -98,7 +98,9 @@ def main() -> None:
         filtered_image: npt.NDArray[np.uint8] = apply_hsv_filter(
             image, lower_hsv, upper_hsv
         )
-        st.image(cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB), use_column_width=True)
+        st.image(
+            cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB), use_container_width=True
+        )
 
     # JSON Export and Display
     hsv_values = {
