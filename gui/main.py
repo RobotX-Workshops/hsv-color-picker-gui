@@ -7,8 +7,7 @@ import numpy as np
 import numpy.typing as npt
 import streamlit as st
 from PIL import Image
-
-from gui.utils import apply_hsv_filter
+from utils import apply_hsv_filter
 
 
 def main() -> None:
@@ -16,9 +15,8 @@ def main() -> None:
     st.title("HSV Color Filter App")
 
     # Top section for input source and image selection
-    source: Optional[Literal['Upload Images', 'Camera Feed']] = st.radio(
-        "Select input source:",
-        ("Upload Images", "Camera Feed")
+    source: Optional[Literal["Upload Images", "Camera Feed"]] = st.radio(
+        "Select input source:", ("Upload Images", "Camera Feed")
     )
     image: Optional[npt.NDArray[np.uint8]] = None
     cap: Union[cv2.VideoCapture, None] = None
@@ -26,8 +24,14 @@ def main() -> None:
     current_image_index: int = 0
 
     if source == "Upload Images":
-        uploaded_files = cast(List[Any], st.file_uploader(
-            "Choose images...", type=["jpg", "jpeg", "png"], accept_multiple_files=True))
+        uploaded_files = cast(
+            List[Any],
+            st.file_uploader(
+                "Choose images...",
+                type=["jpg", "jpeg", "png"],
+                accept_multiple_files=True,
+            ),
+        )
 
         if not uploaded_files:
             st.warning("Please upload one or more images.")
@@ -36,16 +40,22 @@ def main() -> None:
         st.success(f"Uploaded {len(uploaded_files)} images.")
 
         # Image selection controls
-        col1, = st.columns([2])
+        (col1,) = st.columns([2])
         with col1:
-            current_image_index = int(st.number_input(
-                "Select image index", min_value=0, max_value=len(uploaded_files)-1, value=0, step=1))
+            current_image_index = int(
+                st.number_input(
+                    "Select image index",
+                    min_value=0,
+                    max_value=len(uploaded_files) - 1,
+                    value=0,
+                    step=1,
+                )
+            )
 
         file = uploaded_files[current_image_index]
         pil_image = Image.open(io.BytesIO(file.read()))
-        image = np.array(pil_image.convert('RGB'), dtype=np.uint8)
-        image = cast(npt.NDArray[np.uint8],
-                     cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+        image = np.array(pil_image.convert("RGB"), dtype=np.uint8)
+        image = cast(npt.NDArray[np.uint8], cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
 
     else:  # source == "Camera Feed"
         cap = cv2.VideoCapture(0)
@@ -80,13 +90,15 @@ def main() -> None:
         v_max: int = st.sidebar.slider("Value Max", 0, 255, 255)
 
         lower_hsv: npt.NDArray[np.uint8] = np.array(
-            [h_min, s_min, v_min], dtype=np.uint8)
+            [h_min, s_min, v_min], dtype=np.uint8
+        )
         upper_hsv: npt.NDArray[np.uint8] = np.array(
-            [h_max, s_max, v_max], dtype=np.uint8)
+            [h_max, s_max, v_max], dtype=np.uint8
+        )
         filtered_image: npt.NDArray[np.uint8] = apply_hsv_filter(
-            image, lower_hsv, upper_hsv)
-        st.image(cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB),
-                 use_column_width=True)
+            image, lower_hsv, upper_hsv
+        )
+        st.image(cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB), use_column_width=True)
 
     # JSON Export and Display
     hsv_values = {
@@ -95,7 +107,7 @@ def main() -> None:
         "s_min": s_min,
         "s_max": s_max,
         "v_min": v_min,
-        "v_max": v_max
+        "v_max": v_max,
     }
     json_string = json.dumps(hsv_values, indent=2)
     st.sidebar.subheader("HSV Values (JSON)")
@@ -106,7 +118,7 @@ def main() -> None:
             label="Download HSV Values as JSON",
             data=json_string,
             file_name="hsv_values.json",
-            mime="application/json"
+            mime="application/json",
         )
 
     if cap is not None:
