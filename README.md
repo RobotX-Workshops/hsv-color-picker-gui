@@ -2,6 +2,10 @@
 
 A Gui for doing HSV filtering on images or camera feed
 
+## 📦 Prerequisites
+
+- Python 3.12.3 or higher
+
 ## 🚀 Getting Started
 
 Before diving into the algorithms, make sure you have the required tools and libraries installed.
